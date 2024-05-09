@@ -2,7 +2,7 @@
 from termcolor import colored
 from tqdm import tqdm
 import os
-import tarfile
+import zipfile
 import wget
 
 # PyTorch & Pytorch Lightning
@@ -27,16 +27,17 @@ class TinyImageNetDatasetModule(LightningDataModule):
         if not os.path.exists(os.path.join(cfg.DATASET_ROOT_PATH, self.__DATASET_NAME__)):
             # download data
             print(colored("\nDownloading dataset...", color='green', attrs=('bold',)))
-            filename = self.__DATASET_NAME__ + '.tar'
-            wget.download(f'https://hyu-aue8088.s3.ap-northeast-2.amazonaws.com/{filename}')
+            filename = self.__DATASET_NAME__ + '.zip'
+            wget.download(f'http://cs231n.stanford.edu/{filename}')
+            print("sucess")
 
             # extract data
             print(colored("\nExtract dataset...", color='green', attrs=('bold',)))
-            with tarfile.open(name=filename) as tar:
+            with zipfile.ZipFile(filename, 'r') as zip_ref:
                 # Go over each member
-                for member in tqdm(iterable=tar.getmembers(), total=len(tar.getmembers())):
+                for member in tqdm(iterable=zip_ref.namelist(), total=len(zip_ref.namelist())):
                     # Extract member
-                    tar.extract(path=cfg.DATASET_ROOT_PATH, member=member)
+                   zip_ref.extract(member, cfg.DATASET_ROOT_PATH)
             os.remove(filename)
 
     def train_dataloader(self):
